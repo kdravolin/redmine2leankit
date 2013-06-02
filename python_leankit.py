@@ -225,7 +225,7 @@ class LeankitCard(Converter):
     		raise Exception("Can't remove card with title = ", self.title)
 
     def save(self):
-        self._setDescriptionAnnotations(self.description_annotations)
+#         self._setDescriptionAnnotations(self.description_annotations)
         if not (self.is_dirty or self.is_new):
             # no-op.
             return
@@ -288,14 +288,16 @@ class LeankitCard(Converter):
                 "Error %s: %s" % (result.ReplyCode, result.ReplyText))
 
     @classmethod
-    def create(cls, lane, title = '', priority = 1, externalId = None):
+    def create(cls, lane, title, type, externalId = None, priority = 1, 
+               description = '', due_date = None, assigned_user_id = None):
+            
         default_card_data = {
             'Id': None,
             'Title': title,
             'Priority': priority,
-            'Description': '',
+            'Description': description,
             'Tags': '',
-            'TypeId': lane.board.default_cardtype.id,
+            'TypeId': type,
             'LaneId': lane.id,
             'IsBlocked': "false",
             'BlockReason': None,
@@ -303,6 +305,8 @@ class LeankitCard(Converter):
             'ExternalSystemName': None,
             'ExternalSystemUrl': None,
             'ClassOfServiceId': None,
+            'DueDate': due_date,
+            'AssignedUserId': assigned_user_id,
         }
         card = cls(default_card_data, lane)
         return card

@@ -62,7 +62,7 @@ class Project(object):
         for issue_data in parsed_response['issues']:
             self._issues.append(Issue(issue_data))
 
-    def filter_issues(self, **kwargs):
+    def filter_issues(self, excluded, **kwargs):
         """
         Return list of issues within current project, filtered by 'tracker_id'
         """
@@ -75,6 +75,16 @@ class Project(object):
         result = []
         parsed_response = simplejson.loads(self.get_issues_json(filters))
         for issue_data in parsed_response['issues']:
+            
+            # apply filters
+            status = issue_data['status']['name']
+            if status in excluded:
+                continue
+            if ('assigned_to' in issue_data and 
+                (issue_data['assigned_to']['name'] in excluded or 
+                 issue_data['assigned_to']['name'] + "::" + status in excluded)):
+                continue
+            
             result.append(Issue(issue_data))
         return result
 
