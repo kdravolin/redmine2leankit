@@ -1,6 +1,7 @@
-from python_leankit import *
-from python_redmine import *
+from python_leankit import LeankitKanban, LeankitCard
+from python_redmine import Redmine
 from config import *
+import re
 
 def getDueDate(issue):
     '''Get and convert Redmine date into Leankit format'''
@@ -13,10 +14,10 @@ def getDueDate(issue):
 def getCardType(issue, lane):
     '''Matching Redmine tracker and Leankit card type'''
     if issue.tracker['name'] in CARDTYPE_MAPPING:
-        type = CARDTYPE_MAPPING[issue.tracker['name']]
+        card_type = CARDTYPE_MAPPING[issue.tracker['name']]
     else:
-        type = lane.board.default_cardtype.id
-    return type
+        card_type = lane.board.default_cardtype.id
+    return card_type
 
 def getUserId(issue):
     '''Get Leankit User Id by Redmine User Name'''
@@ -63,42 +64,42 @@ if __name__ == '__main__':
     print "[yes]"
 
     print "Start copy tickets from RedMine to LeanKit ..."
-    for issue in project.filter_issues(IGNORE_LIST, status_id = "*"): #tracker_id = READMINE_MAPPING_FEATURE_ID
+    for issue in project.filter_issues(IGNORE_LIST, status_id = "*"):
         if issue.status['name'] in STATUSES_MAPPING:
 
-            rm_status = ""
+            lk_status = ""
             
             # support synchronization based on ticket status
-            rm_status = STATUSES_MAPPING[issue.status['name']]
+            lk_status = STATUSES_MAPPING[issue.status['name']]
 
             # support synchronization based on ticket status and assign person
             if hasattr(issue, 'assigned_to') and issue.assigned_to['name'] + "::" + issue.status['name'] in STATUSES_MAPPING:
-                 rm_status = STATUSES_MAPPING[issue.assigned_to['name'] + "::" + issue.status['name']]
+                lk_status = STATUSES_MAPPING[issue.assigned_to['name'] + "::" + issue.status['name']]
             
             # support for changing status by prefix
             for prefix in PREFIX_MAPPING:
                 p = re.compile(prefix.lower() + " .*")
                 m = p.match(issue.subject.lower())
                 if m:
-                    st = rm_status.split('::')
+                    st = lk_status.split('::')
                     if len(st) == 2:
-                        rm_status = PREFIX_MAPPING[prefix] + '::' + st[1]
+                        lk_status = PREFIX_MAPPING[prefix] + '::' + st[1]
                 
-            lane = board.getLane(rm_status)
+            lane = board.getLane(lk_status)
 
             print "sync '%s' ... " % issue.subject,
             
             #set values of card arguments
             externalId = issue.id
             title = issue.subject
-            type = getCardType(issue, lane)
+            card_type = getCardType(issue, lane)
             priority = PRIORITY_MAPPING[issue.priority['name']]
             description = issue.description
             due_date = getDueDate(issue)
             assigned_user_id = getUserId(issue)
             
             #create and save Leankit card
-            card = LeankitCard.create(lane, title, type, externalId, priority, 
+            card = LeankitCard.create(lane, title, card_type, externalId, priority, 
                                       description, due_date, assigned_user_id
                                       ).save()
             print "[yes]"

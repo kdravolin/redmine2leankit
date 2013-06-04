@@ -6,10 +6,12 @@ Supported synchronization based on ticket status and on assigned person.
 
 For example, by default Redmine doesn't support "Testing" ticket status. You may configure to sync ticket with "In progress" status differently when it's assigned to different persons. "In progress" assigned to QA means "Testing::In Progress". "In progress" assigned to developer means "Development::In progress".
 
+This script is able to assign a card to the person if profile name in Redmine and LeanKit are the same. Supported ticket type mappings by name.
+
 ## Configuration
 
 1. Install necessary Python packages by running install-requirements.sh script.
-2. Edit app.py file to configurate script with RedMine and LeanKit related properties:
+2. Edit config.py file to configurate script with RedMine and LeanKit related properties:
 
 	LEANKIT_HOST = you LeanKit account host name, probably something like this: "your_account.leankitkanban.com"
 
@@ -25,11 +27,11 @@ For example, by default Redmine doesn't support "Testing" ticket status. You may
 
 	READMINE_PROJECT_IDENTIFIER = look at project settings for this, "Identifier" field
 
-	READMINE_MAPPING_FEATURE_ID = you may filter tickets for sync by type. e.g. sync only feaures. You have to specify ID of tickets type which will used for sync, e.g. "Feature" = 2
-
-3. You may also need to configure mapping between RedMine tickets statuses and LeanKit board lanes. Edit app.py file for it and change STATUSES_MAPPING constant.
-4. This script do not create the LeanKit board and lanes for you. So, you have to create the board and create lanes according to settings you configured in step 3 (mapping)
-5. run python app.py
+3. You may also need to configure mapping between RedMine tickets statuses and LeanKit board lanes. Edit config.py file for it and change STATUSES_MAPPING constant.
+4. You may filter tickets for sync by status, persons and personal status. Edit IGNORE_LIST in config.py file for excluding tickets from sync.
+5. This script allows you to change card status if title of ticket begins with specific prefix. Edit config.py file for it and add prefix to PREFIX_MAPPING constant.
+6. This script do not create the LeanKit board, lanes and card type for you. So, you have to create the board, lanes and card status according to settings you configured in step 3 (mapping)
+7. run python app.py
 
 ## Requirements
 
