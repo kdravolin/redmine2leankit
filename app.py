@@ -36,6 +36,15 @@ def getUserId(issue):
         user_id = None
     return user_id
 
+def getPoint(issue):
+    '''Get Redmine issue points'''
+    points = None
+    for field in issue.custom_fields:
+        if field['name'] == "Points":
+            points = field['value']
+            break
+    return points
+
 if __name__ == '__main__':
 
     kanban = LeankitKanban(LEANKIT_HOST, LEANKIT_LOGIN, LEANKIT_PASSWORD)
@@ -78,14 +87,20 @@ if __name__ == '__main__':
             
             # support for changing status by prefix
             for prefix in PREFIX_MAPPING:
-                p = re.compile(prefix.lower() + " .*")
+                p = re.compile(prefix.lower() + "[\s\S]*")
                 m = p.match(issue.subject.lower())
                 if m:
+                    if PREFIX_MAPPING[prefix] == None:
+                        lk_status = None
+                        break;
                     st = lk_status.split('::')
                     if len(st) == 2:
                         lk_status = PREFIX_MAPPING[prefix] + '::' + st[1]
-                
-            lane = board.getLane(lk_status)
+            
+            if lk_status:
+                lane = board.getLane(lk_status)
+            else:
+                continue
 
             print "sync '%s' ... " % issue.subject,
             
@@ -97,10 +112,11 @@ if __name__ == '__main__':
             description = issue.description
             due_date = getDueDate(issue)
             assigned_user_id = getUserId(issue)
+            size = getPoint(issue)
             
             #create and save Leankit card
             card = LeankitCard.create(lane, title, card_type, externalId, priority, 
-                                      description, due_date, assigned_user_id
-                                      ).save()
+                                      description, due_date, assigned_user_id,
+                                      size).save()
             print "[yes]"
     print "Finished"

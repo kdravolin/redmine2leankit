@@ -217,12 +217,12 @@ class LeankitCard(Converter):
             self.tags = ', '.join(self.tags_list)
 
     def remove(self):
-    	url = '/Board/' + str(self.lane.board.id)+ '/DeleteCards'
-    	data = [self.id]
-
-    	result = self.lane.board.connector.post(url, data=data)
-    	if not (result.ReplyCode in LeankitResponseCodes.SUCCESS_CODES):
-    		raise Exception("Can't remove card with title = ", self.title)
+        url = '/Board/' + str(self.lane.board.id)+ '/DeleteCards'
+        data = [self.id]
+        
+        result = self.lane.board.connector.post(url, data=data)
+        if not (result.ReplyCode in LeankitResponseCodes.SUCCESS_CODES):
+            raise Exception("Can't remove card with title = ", self.title)
 
     def save(self):
 #         self._setDescriptionAnnotations(self.description_annotations)
@@ -288,8 +288,9 @@ class LeankitCard(Converter):
                 "Error %s: %s" % (result.ReplyCode, result.ReplyText))
 
     @classmethod
-    def create(cls, lane, title, type, externalId = None, priority = 1, 
-               description = '', due_date = None, assigned_user_id = None):
+    def create(cls, lane, title, card_type, externalId = None, priority = 1, 
+               description = '', due_date = None, assigned_user_id = None, 
+               size = None):
             
         default_card_data = {
             'Id': None,
@@ -297,7 +298,7 @@ class LeankitCard(Converter):
             'Priority': priority,
             'Description': description,
             'Tags': '',
-            'TypeId': type,
+            'TypeId': card_type,
             'LaneId': lane.id,
             'IsBlocked': "false",
             'BlockReason': None,
@@ -307,6 +308,7 @@ class LeankitCard(Converter):
             'ClassOfServiceId': None,
             'DueDate': due_date,
             'AssignedUserId': assigned_user_id,
+            'Size': size,
         }
         card = cls(default_card_data, lane)
         return card
